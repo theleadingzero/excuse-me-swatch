@@ -33,36 +33,49 @@ void setup() {
 }
 
 void loop() {
+  // play game if we haven't reaching fastest level
+  if ( delayTime > 80 ){
+    switch( chosenLED ){
+    case -1:
+      // if the button hasn't been pressed to choose an LED
+      // keep flashing the gam
+      for( currLED=0; currLED<NUM_LEDS-1; currLED++) {
+        digitalWrite( leds[currLED], HIGH );
+        digitalWrite( leds[prevLED], LOW );
+        delay( delayTime ); 
+        prevLED = currLED;
+      }
+      for( currLED=NUM_LEDS-1; currLED>0; currLED--) {
+        digitalWrite( leds[currLED], HIGH );
+        digitalWrite( leds[prevLED], LOW );
+        delay( delayTime ); 
+        prevLED = currLED;
+      }
+      break;
 
-  switch( chosenLED ){
-  case -1:
-    // if the button hasn't been pressed to choose an LED
-    // keep flashing the gam
-    for( currLED=0; currLED<NUM_LEDS-1; currLED++) {
-      digitalWrite( leds[currLED], HIGH );
-      digitalWrite( leds[prevLED], LOW );
-      delay( delayTime ); 
-      prevLED = currLED;
+    default:
+      // light up the chosen LED
+      for( int i=0; i<chosenLED; i++ ) {
+        digitalWrite( leds[i], LOW );
+      } 
+      for( int i=chosenLED+1; i<NUM_LEDS; i++ ) {
+        digitalWrite( leds[i], LOW );
+      } 
+      digitalWrite( leds[chosenLED], HIGH );
+
     }
-    for( currLED=NUM_LEDS-1; currLED>0; currLED--) {
-      digitalWrite( leds[currLED], HIGH );
-      digitalWrite( leds[prevLED], LOW );
-      delay( delayTime ); 
-      prevLED = currLED;
+  } 
+  else {
+    for( int i=0; i<NUM_LEDS; i++) {
+      digitalWrite( leds[i], HIGH );
     }
-    break;
-
-  default:
-    // light up the chosen LED
-    for( int i=0; i<chosenLED; i++ ) {
+    delay( 150 );
+    for( int i=0; i<NUM_LEDS; i++) {
       digitalWrite( leds[i], LOW );
-    } 
-    for( int i=chosenLED+1; i<NUM_LEDS; i++ ) {
-      digitalWrite( leds[i], LOW );
-    } 
-    digitalWrite( leds[chosenLED], HIGH );
-
+    }
+    delay( 150 ); 
   }
+
   //Serial.println(chosenLED);
 
 }
@@ -86,6 +99,8 @@ void buttonHit () {
 
 
 }
+
+
 
 
 
