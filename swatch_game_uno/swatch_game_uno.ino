@@ -7,6 +7,9 @@ int button = 2;
 volatile int chosenLED = -1;
 int currLED = 0;
 int prevLED = 0;
+volatile int delayTime = 300;
+
+volatile int lastButtonTime = 0;
 
 void setup() {
   // set LED pins as outputs and
@@ -30,31 +33,64 @@ void setup() {
 }
 
 void loop() {
-  if( chosenLED == -1 ){
+
+  switch( chosenLED ){
+  case -1:
+    // if the button hasn't been pressed to choose an LED
+    // keep flashing the gam
     for( currLED=0; currLED<NUM_LEDS-1; currLED++) {
       digitalWrite( leds[currLED], HIGH );
       digitalWrite( leds[prevLED], LOW );
-      delay(300); 
+      delay( delayTime ); 
       prevLED = currLED;
     }
-    for( currLED=NUM_LEDS-1; currLED>=0; currLED--) {
+    for( currLED=NUM_LEDS-1; currLED>0; currLED--) {
       digitalWrite( leds[currLED], HIGH );
       digitalWrite( leds[prevLED], LOW );
-      delay(300); 
+      delay( delayTime ); 
       prevLED = currLED;
     }
+    break;
+
+  default:
+    // light up the chosen LED
+    for( int i=0; i<chosenLED; i++ ) {
+      digitalWrite( leds[i], LOW );
+    } 
+    for( int i=chosenLED+1; i<NUM_LEDS; i++ ) {
+      digitalWrite( leds[i], LOW );
+    } 
+    digitalWrite( leds[chosenLED], HIGH );
+
   }
-  else {
-   for( int i=0; i<NUM_LEDS; i++ ) {
-    digitalWrite( leds[i], LOW );
-   } 
-   digitalWrite( leds[chosenLED], HIGH );
-  }
+  //Serial.println(chosenLED);
+
 }
 
 void buttonHit () {
-  chosenLED = currLED; 
+  // select LED
+  if( chosenLED == -1 ) {
+    chosenLED = currLED; 
+    lastButtonTime = millis();
+
+    if( chosenLED == 1 && delayTime > 60 ) {
+      delayTime = delayTime-20; 
+    }
+  }
+
+  // if an LED has been selected over a second ago
+  // start next round of game
+  if ( chosenLED != -1 && ( millis()-lastButtonTime > 1000 )) {
+    chosenLED = -1;
+  }
+
+
 }
+
+
+
+
+
 
 
 
