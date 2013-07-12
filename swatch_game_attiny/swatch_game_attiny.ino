@@ -4,12 +4,15 @@ int leds[] = {
   0, 1, 3};
 int button = 2;
 
-volatile int chosenLED = -1;
 int currLED = 0;
 int prevLED = 0;
-volatile int delayTime = 300;
+int winTime = 140;
 
-volatile int lastButtonTime = 0;
+volatile int chosenLED = -1;
+volatile int delayTime = 240;
+volatile int lastChosenTime = 0;
+volatile int lastPress = 0;
+
 
 void setup() {
   // set LED pins as outputs and
@@ -32,7 +35,7 @@ void setup() {
 
 void loop() {
   // play game if we haven't reaching fastest level
-  if ( delayTime > 80 ){
+  if ( delayTime > winTime ){
     switch( chosenLED ){
     case -1:
       // if the button hasn't been pressed to choose an LED
@@ -76,19 +79,26 @@ void loop() {
 }
 
 void buttonHit () {
-  // select LED
-  if( chosenLED == -1 ) {
-    chosenLED = currLED; 
-    lastButtonTime = millis();
+  // button debounce
+  int currState = digitalRead( button );
+  
+  if ( millis() - lastPress > 100 && currState==LOW ) {
+    // select LED
+    if( chosenLED == -1 ) {
+      chosenLED = currLED; 
+      lastChosenTime = millis();
 
-    if( chosenLED == 1 && delayTime > 60 ) {
-      delayTime = delayTime-20; 
+      if( chosenLED == 1 && delayTime >= winTime ) {
+        delayTime = delayTime-20; 
+      }
     }
-  }
 
-  // if an LED has been selected over a second ago
-  // start next round of game
-  if ( chosenLED != -1 && ( millis()-lastButtonTime > 1000 )) {
-    chosenLED = -1;
-  }
+    // if an LED has been selected over a second ago
+    // start next round of game
+    if ( chosenLED != -1 && ( millis()-lastChosenTime > 1000 )) {
+      chosenLED = -1;
+    }
+  } 
+  lastPress = millis();
 }
+
