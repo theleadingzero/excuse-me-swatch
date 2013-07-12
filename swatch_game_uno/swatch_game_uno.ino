@@ -4,12 +4,15 @@ int leds[] = {
   7, 8, 9};
 int button = 2;
 
-volatile int chosenLED = -1;
 int currLED = 0;
 int prevLED = 0;
-volatile int delayTime = 300;
+int winTime = 140;
 
-volatile int lastButtonTime = 0;
+volatile int chosenLED = -1;
+volatile int delayTime = 240;
+volatile int lastChosenTime = 0;
+volatile int lastPress = 0;
+
 
 void setup() {
   // set LED pins as outputs and
@@ -27,14 +30,14 @@ void setup() {
   // attach interrupt to our function and
   // have it called when the signal falls
   // from high to low
-  attachInterrupt( 0, buttonHit, FALLING );
+  attachInterrupt( 0, buttonHit, CHANGE );
 
   Serial.begin( 9600 );
 }
 
 void loop() {
   // play game if we haven't reaching fastest level
-  if ( delayTime > 80 ){
+  if ( delayTime > winTime ){
     switch( chosenLED ){
     case -1:
       // if the button hasn't been pressed to choose an LED
@@ -76,40 +79,40 @@ void loop() {
     delay( 150 ); 
   }
 
-  //Serial.println(chosenLED);
-
+  /*Serial.print("delayTime: ");
+   Serial.print(delayTime);
+   Serial.print(" chosenLED: " );
+   Serial.println(chosenLED);
+   */
 }
 
 void buttonHit () {
-  // select LED
-  if( chosenLED == -1 ) {
-    chosenLED = currLED; 
-    lastButtonTime = millis();
+  // button debounce
+  int currState = digitalRead( button );
 
-    if( chosenLED == 1 && delayTime > 60 ) {
-      delayTime = delayTime-20; 
+  if ( millis() - lastPress > 100 && currState==LOW) {
+    Serial.println("button pressed");
+    // select LED
+    if( chosenLED == -1 ) {
+      chosenLED = currLED; 
+      lastChosenTime = millis();
+
+      if( chosenLED == 1 && delayTime >= winTime ) {
+        delayTime = delayTime-20; 
+        Serial.print( "minus time " );
+        Serial.println( chosenLED );
+      }
     }
-  }
 
-  // if an LED has been selected over a second ago
-  // start next round of game
-  if ( chosenLED != -1 && ( millis()-lastButtonTime > 1000 )) {
-    chosenLED = -1;
-  }
+    // if an LED has been selected over a second ago
+    // start next round of game
+    if ( chosenLED != -1 && ( millis()-lastChosenTime > 1000 )) {
+      chosenLED = -1;
+    }
 
-
+    Serial.print( chosenLED );
+    Serial.print( " ");
+    Serial.println( delayTime );
+  } 
+  lastPress = millis();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
